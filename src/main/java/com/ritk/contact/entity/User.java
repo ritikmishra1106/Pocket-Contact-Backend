@@ -21,6 +21,8 @@ public class User {
     private String phoneNumber;
     @Email(message = "Invalid email format")
     @NotBlank(message = "EMail is required")
+    @Email(message = "Email should be valid")
+    @Column(unique = true)
     private String email;
     @NotBlank(message = "password is required")
     @Size(min = 6,message = "Password must be at least 6 characters")

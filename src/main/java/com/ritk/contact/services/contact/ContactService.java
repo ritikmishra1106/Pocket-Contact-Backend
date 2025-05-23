@@ -5,12 +5,14 @@ import com.ritk.contact.entity.Contact;
 import java.util.List;
 
 public interface ContactService {
-    Contact saveContactWithUser(Contact contact, Long userId);
 
-    Contact updateContact(Contact contact);
-    void deleteContact(Long id);
-    Contact getContactById(Long id);
+    Contact saveContactForCurrentUser(Contact contact);
 
-    List<Contact> getAllContactsOfUser(Long userId);
+    Contact updateContact(Long contactId, Contact contact);
 
+    void deleteContact(Long contactId);
+
+    Contact getContactById(Long contactId);
+
+    List<Contact> getAllContactsOfCurrentUser();
 }
