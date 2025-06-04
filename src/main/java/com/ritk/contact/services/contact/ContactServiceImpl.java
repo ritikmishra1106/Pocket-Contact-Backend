@@ -6,10 +6,18 @@ import com.ritk.contact.exception.GlobalExceptionHandler;
 import com.ritk.contact.repository.ContactRepository;
 import com.ritk.contact.services.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class ContactServiceImpl implements ContactService {
@@ -19,6 +27,10 @@ public class ContactServiceImpl implements ContactService {
 
     @Autowired
     private UserService userService;
+
+    @Value("${app.upload.dir:uploads}")
+    private String uploadDir;
+
 
     // ✅ Save contact for current user
     @Override
@@ -30,6 +42,51 @@ public class ContactServiceImpl implements ContactService {
 
         if (existing.isPresent()) {
             throw new RuntimeException("Contact already exists with this phone number.");
+        }
+
+        contact.setUser(currentUser);
+        return contactRepository.save(contact);
+    }
+
+    @Override
+    public Contact saveContactWithImage(Contact contact, MultipartFile image) {
+        User currentUser = userService.getCurrentUser();
+
+        // Duplicate check
+        Optional<Contact> existing = contactRepository.findByUserAndPhoneNumber(currentUser, contact.getPhoneNumber());
+        if (existing.isPresent()) {
+            throw new RuntimeException("Contact already exists with this phone number.");
+        }
+
+        if (image != null && !image.isEmpty()) {
+            try {
+                // ✅ Static upload path (defined in application.properties)
+                Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+
+                if (!Files.exists(uploadPath)) {
+                    Files.createDirectories(uploadPath); // Create folder if doesn't exist
+                }
+
+                String originalFilename = image.getOriginalFilename();
+                String fileExtension = "";
+
+                if (originalFilename != null && originalFilename.contains(".")) {
+                    fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                }
+
+                String fileName = UUID.randomUUID().toString() + fileExtension;
+
+                Path filePath = uploadPath.resolve(fileName);
+                Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+                // ✅ Save only relative path
+                contact.setProfileImage("uploads/" + fileName); // frontend will prepend base URL
+
+                System.out.println("✅ Image uploaded: " + filePath.toAbsolutePath());
+
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to upload image: " + e.getMessage(), e);
+            }
         }
 
         contact.setUser(currentUser);

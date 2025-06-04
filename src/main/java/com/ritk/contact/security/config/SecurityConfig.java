@@ -52,7 +52,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint)) // ✅ Add this line
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/register", "/api/users/login").permitAll() // ye public hai
+                        .requestMatchers("/api/users/register", "/api/users/login","/uploads/**").permitAll() // ye public hai
                         .anyRequest().authenticated() // baaki sab secure hai
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // JWT hai, to stateless hoga

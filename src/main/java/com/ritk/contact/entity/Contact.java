@@ -25,6 +25,9 @@ public class Contact {
     private String company;
     private String jobTitle;
 
+    @Column(name = "profile_image")
+    private String profileImage;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     @JsonIgnore
@@ -107,6 +110,15 @@ public class Contact {
     public void setName(String name) {
         this.name = name;
     }
+
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(String profileImage) {
+        this.profileImage = profileImage;
+    }
+
 
     @Override
     public String toString() {
